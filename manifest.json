@@ -1,0 +1,20 @@
+{
+   "manifest_version": 2,
+   "name": "Lichess ClockCenter",
+   "version": "1.0",
+   "description": "Display chess game time in the middle of the board on Lichess.org",
+   "permissions": ["activeTab"],
+   "content_scripts": [
+      {
+         "matches": ["*://lichess.org/*"],
+         "js": ["content.js"]
+      }
+   ],
+   "browser_action": {
+      "default_popup": "popup.html",
+      "default_icon": "icon.png"
+   },
+   "icons": {
+      "48": "icon.png"
+   }
+}
