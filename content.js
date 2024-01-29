@@ -13,9 +13,9 @@ function createOrUpdateCanvas(chessboard, side) {
    canvas.style.pointerEvents = "none";
    canvas.style.top = "0px";
    if (side === "left") {
-      canvas.style.left = 16 - cachedSettings.arcDiscrepancy / 4.5 + "%";
+      canvas.style.right = cachedSettings.arcDiscrepancy / 2 + "%";
    } else {
-      canvas.style.right = 16 - cachedSettings.arcDiscrepancy / 4.5 + "%";
+      canvas.style.left = cachedSettings.arcDiscrepancy / 2 + "%";
    }
 
    return canvas;
@@ -23,41 +23,59 @@ function createOrUpdateCanvas(chessboard, side) {
 
 function drawArc(canvas, percentage, side) {
    let context = canvas.getContext("2d");
-   if (percentage > 100) percentage = 100;
-   let x = canvas.width / 2;
-   let y = canvas.height / 2;
+   let width = canvas.width;
+   let height = canvas.height;
 
-   let radius = (Math.min(canvas.width, canvas.height) / 2) * 0.8;
+   let offset = 100;
+   percentage = Math.min(Math.max(percentage, 0), 100);
+   let arcAngle = 2 * cachedSettings.arcAngle;
 
-   let startAngle = side === "left" ? Math.PI - 2 / 2 : Math.PI - 4.28 / 2;
-   let endAngle =
-      side === "left"
-         ? startAngle + (Math.PI - 1) * (percentage / 100)
-         : startAngle - (Math.PI - 1) * (percentage / 100);
+   let startX = width / 2;
+   let startY = height - offset;
+   let endX = width / 2;
+   let endY = 0 + offset;
 
-   context.clearRect(0, 0, canvas.width, canvas.height);
-   if (percentage > 0) {
-      context.beginPath();
-      context.arc(x, y, radius, startAngle, endAngle, side === "right");
-      context.lineWidth = parseInt(cachedSettings.arcThickness) || 25;
-      context.strokeStyle =
-         side === "left"
-            ? parseColor(
-                 cachedSettings.leftArcColor,
-                 cachedSettings.arcAlpha
-              ) || "rgba(0, 128, 0, 0.3)"
-            : parseColor(
-                 cachedSettings.rightArcColor,
-                 cachedSettings.arcAlpha
-              ) || "rgba(255, 0, 0, 0.3)";
-      context.stroke();
+   let controlOffset = arcAngle * 1.5;
+   let controlX =
+      side === "left" ? startX - controlOffset : startX + controlOffset;
+   let controlY = height / 2;
+   let controlX2 =
+      side === "left" ? startX - controlOffset : startX + controlOffset;
+   let controlY2 = controlY;
+   context.clearRect(0, 0, width, height);
+   context.beginPath();
+   context.moveTo(startX, startY);
+
+   let numSegments = 100;
+   let tStep = 1 / numSegments;
+
+   for (let i = 0; i <= numSegments * (percentage / 100); i++) {
+      let t = tStep * i;
+      let x =
+         (1 - t) ** 3 * startX +
+         3 * (1 - t) ** 2 * t * controlX +
+         3 * (1 - t) * t ** 2 * controlX2 +
+         t ** 3 * endX;
+      let y =
+         (1 - t) ** 3 * startY +
+         3 * (1 - t) ** 2 * t * controlY +
+         3 * (1 - t) * t ** 2 * controlY2 +
+         t ** 3 * endY;
+      context.lineTo(x, y);
    }
+
+   context.lineWidth = cachedSettings.arcThickness;
+   context.strokeStyle =
+      side === "left"
+         ? parseColor(cachedSettings.leftArcColor, cachedSettings.arcAlpha)
+         : parseColor(cachedSettings.rightArcColor, cachedSettings.arcAlpha);
+   context.stroke();
 }
 
 function parseColor(inputColor, alpha) {
    let canvas = document.createElement("canvas");
-   canvas.width = canvas.height = 1;
    let ctx = canvas.getContext("2d");
+   canvas.width = canvas.height = 1;
    ctx.fillStyle = inputColor; // Set the input color
    ctx.fillRect(0, 0, 1, 1);
    let [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;

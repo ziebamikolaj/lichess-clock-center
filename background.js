@@ -1,11 +1,10 @@
 const defaultSettings = {
-   arcThickness: 25,
-   arcDiscrepancy: 30,
-   leftArcColor: "#00ff00",
-   rightArcColor: "#ff0000",
-   leftArcAlpha: 0.3,
-   rightArcAlpha: 0.3,
-   arcAngle: 70,
+   arcThickness: 70,
+   arcDiscrepancy: 50,
+   leftArcColor: "#ffffff",
+   rightArcColor: "#000000",
+   arcAlpha: 0.4,
+   arcAngle: 30,
 };
 
 chrome.runtime.onInstalled.addListener(() => {
