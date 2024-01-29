@@ -6,17 +6,18 @@ function createOrUpdateCanvas(chessboard, side) {
       canvas.id = canvasId;
       chessboard.appendChild(canvas);
    }
-   canvas.width = chessboard.clientWidth / 2;
+   canvas.width = chessboard.clientWidth;
    canvas.height = chessboard.clientHeight;
    canvas.style.position = "absolute";
    canvas.style.zIndex = "100";
    canvas.style.pointerEvents = "none";
    canvas.style.top = "0px";
    if (side === "left") {
-      canvas.style.left = "25%";
+      canvas.style.left = 16 - cachedSettings.arcDiscrepancy / 4.5 + "%";
    } else {
-      canvas.style.left = "25%";
+      canvas.style.right = 16 - cachedSettings.arcDiscrepancy / 4.5 + "%";
    }
+
    return canvas;
 }
 
@@ -28,22 +29,39 @@ function drawArc(canvas, percentage, side) {
 
    let radius = (Math.min(canvas.width, canvas.height) / 2) * 0.8;
 
-   let thickness = 30;
-   let startAngle = Math.PI / 2;
+   let startAngle = side === "left" ? Math.PI - 2 / 2 : Math.PI - 4.28 / 2;
    let endAngle =
       side === "left"
-         ? startAngle + Math.PI * (percentage / 100)
-         : startAngle - Math.PI * (percentage / 100);
+         ? startAngle + (Math.PI - 1) * (percentage / 100)
+         : startAngle - (Math.PI - 1) * (percentage / 100);
 
    context.clearRect(0, 0, canvas.width, canvas.height);
    if (percentage > 0) {
       context.beginPath();
       context.arc(x, y, radius, startAngle, endAngle, side === "right");
-      context.lineWidth = thickness;
+      context.lineWidth = parseInt(cachedSettings.arcThickness) || 25;
       context.strokeStyle =
-         side === "left" ? "rgba(0, 128, 0, 0.3)" : "rgba(255, 0, 0, 0.3)";
+         side === "left"
+            ? parseColor(
+                 cachedSettings.leftArcColor,
+                 cachedSettings.arcAlpha
+              ) || "rgba(0, 128, 0, 0.3)"
+            : parseColor(
+                 cachedSettings.rightArcColor,
+                 cachedSettings.arcAlpha
+              ) || "rgba(255, 0, 0, 0.3)";
       context.stroke();
    }
+}
+
+function parseColor(inputColor, alpha) {
+   let canvas = document.createElement("canvas");
+   canvas.width = canvas.height = 1;
+   let ctx = canvas.getContext("2d");
+   ctx.fillStyle = inputColor; // Set the input color
+   ctx.fillRect(0, 0, 1, 1);
+   let [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 function updateTimeDisplay() {
@@ -81,9 +99,22 @@ function getUserTime(domElement) {
 }
 
 function setupCanvases() {
-   updateTimeDisplay();
+   chrome.storage.local.get("clockCenterSettings", function (data) {
+      if (data.clockCenterSettings) {
+         cachedSettings = data.clockCenterSettings;
+      }
+   });
    window.addEventListener("resize", updateTimeDisplay);
-   setInterval(updateTimeDisplay, 1000);
+   setInterval(updateTimeDisplay, 100);
 }
 const gameTime = getGameTime();
+let cachedSettings = {};
+
 setupCanvases();
+// updateTimeDisplay();
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+   if (request.type === "updateSettings") {
+      cachedSettings = request.newSettings;
+      updateTimeDisplay();
+   }
+});

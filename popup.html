@@ -1,11 +1,62 @@
 <!DOCTYPE html>
 <html>
    <head>
-      <title>Lichess ClockCenter</title>
+      <title>Lichess ClockCenter Settings</title>
+      <style>
+         body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+         }
+         label {
+            display: block;
+            margin: 10px 0 5px;
+         }
+         input[type="range"],
+         input[type="color"] {
+            width: 100%;
+         }
+         button {
+            background-color: #0066cc;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+         }
+         button:hover {
+            background-color: #0056b3;
+         }
+      </style>
    </head>
    <body>
-      <h1>Lichess ClockCenter</h1>
-      <button id="toggleButton">Enable/Disable</button>
+      <h1>Lichess ClockCenter Settings</h1>
+      <label for="arcThickness">Arc Thickness:</label>
+      <input type="range" id="arcThickness" min="5" max="100" /><br /><br />
+
+      <label for="arcDiscrepancy">Arc Discrepancy:</label>
+      <input type="range" id="arcDiscrepancy" min="1" max="100" /><br /><br />
+
+      <label for="leftArcColor">Left Arc Color:</label>
+      <input type="color" id="leftArcColor" /><br /><br />
+
+      <label for="rightArcColor">Right Arc Color:</label>
+      <input type="color" id="rightArcColor" /><br /><br />
+
+      <label for="arcAlpha">Arc Alpha:</label>
+      <input
+         type="range"
+         id="arcAlpha"
+         min="0"
+         max="1"
+         step="0.02"
+      /><br /><br />
+
+      <label for="arcAngle">Arc Angle:</label>
+      <input type="range" id="arcAngle" min="0" max="100" /><br /><br />
+
+      <button id="resetSettings">Reset to Default</button>
       <script src="popup.js"></script>
    </body>
 </html>
